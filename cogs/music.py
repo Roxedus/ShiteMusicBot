@@ -20,7 +20,7 @@ from bs4 import BeautifulSoup
 from .utils import checks, RoxUtils, timeformatter
 from .utils.mixplayer import MixPlayer
 from .utils.paginator import QueuePaginator, TextPaginator, Scroller
-
+from .utils.selector import Selector
 
 time_rx = re.compile('[0-9]+')
 url_rx = re.compile('https?:\\/\\/(?:www\\.)?.+')
@@ -314,6 +314,32 @@ class Music(commands.Cog):
 
         await ctx.send(ctx.localizer.format_str("{remove}", _title=removed.title))
 
+
+    @commands.command(name='sr')
+    async def _sr(self, ctx):
+        player = self.bot.lavalink.players.get(ctx.guild.id)
+
+        if player.queue.empty:
+            return
+
+        user_queue = player.user_queue(ctx.author.id, dual=True)
+        if not user_queue:
+            return await ctx.send(ctx.localizer.format_str("{my_queue}"))
+
+        identifiers = []
+        for index, temp in enumerate(user_queue):
+                track, globpos = temp
+                identifiers.append(ctx.localizer.format_str("{queue.usertrack}", _index=index+1,
+                                                    _globalindex=globpos+1, _title=track.title,
+                                                    _uri=track.uri))
+        functions = [player.remove_user_track]*len(user_queue)
+        arguments = [(ctx.author.id, i) for i in range(len(user_queue))]
+
+        selector = Selector(ctx, identifiers, functions, arguments, num_selections=5)
+        message, page, removed = await selector.start_scrolling()
+        await message.edit(ctx.localizer.format_str("{remove}", _title=removed.title))
+
+
     @commands.command(name="DJremove")
     @checks.DJ_or()
     async def _djremove(self, ctx, pos: int, user: discord.Member=None):
@@ -458,6 +484,43 @@ class Music(commands.Cog):
                 await result_msg.edit(embed=embed)
                 if not player.is_playing:
                     await player.play()
+
+    @commands.command(name='sk')
+    @checks.DJ_or(alone=True)
+    async def _sk(self, ctx, *, query):    
+        player = self.bot.lavalink.players.get(ctx.guild.id)
+
+        if not query.startswith('ytsearch:') and not query.startswith('scsearch:'):
+            query = 'ytsearch:' + query
+
+        results = await player.node.get_tracks(query)
+
+        embed = discord.Embed(description='{nothing_found}', color=0x36393F)
+        if not results or not results['tracks']:
+            embed = ctx.localizer.format_embed(embed)
+            return await ctx.send(embed=embed)
+
+        tracks = results['tracks']
+        result_count = min(len(tracks), 15)
+
+        identifiers = []
+        functions = [self.enqueue]*result_count
+        arguments = [(ctx, tracks[i], discord.Embed(color=ctx.me.color)) for i in range(result_count)]
+        for index, track in enumerate(tracks, start=1):
+            track_title = track['info']['title']
+            track_uri = track['info']['uri']
+            duration = timeformatter.format(int(track['info']['length']))
+            identifiers.append(f'`{index}.` [{track_title}]({track_uri}) `{duration}`')
+            if index == result_count:
+                break
+
+        search_selector = Selector(ctx, identifiers, functions, arguments, num_selections=5, color=ctx.me.color, title='Selector test')
+        message, current_page, result = await search_selector.start_scrolling()
+        result = ctx.localizer.format_embed(result)
+        await message.edit(embed=result)
+
+        if not player.is_playing:
+            await player.play()
 
     @commands.command(name='disconnect')
     @checks.DJ_or(alone=True)
@@ -704,7 +767,7 @@ class Music(commands.Cog):
         player = self.bot.lavalink.players.create(ctx.guild.id, endpoint=ctx.guild.region.value)
         # Create returns a player if one exists, otherwise creates.
 
-        should_connect = ctx.command.callback.__name__ in ('_play', '_find', '_search')  # Add commands that require joining voice to work.
+        should_connect = ctx.command.callback.__name__ in ('_play', '_find', '_search', '_sk')  # Add commands that require joining voice to work.
         without_connect = ctx.command.callback.__name__ in ('_queue', '_history', '_now', '_lyrics') # Add commands that don't require the you being in voice.
 
         if without_connect:
@@ -778,6 +841,8 @@ class Music(commands.Cog):
 
         duration = timeformatter.format(int(track.duration))
         embed.description = f'[{track.title}]({track.uri})\n**{duration}**'
+
+        return embed
 
     def max_track_length(self, guild, player):
         is_dynamic = self.bot.settings.get(guild, 'duration.is_dynamic', 'default_duration_type')
