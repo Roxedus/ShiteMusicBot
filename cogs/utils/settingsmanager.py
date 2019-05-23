@@ -3,6 +3,7 @@ import codecs
 import locale
 import yaml
 
+
 class Settings:
     def __init__(self, **default_settings):
         self._DATA_PATH = 'data/bot/'
@@ -35,7 +36,7 @@ class Settings:
             if val is None:
                 try:
                     d.pop(key)
-                except:
+                except KeyError:
                     pass
             else:
                 d[key] = val

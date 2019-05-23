@@ -23,7 +23,7 @@ from .utils.paginator import QueuePaginator, TextPaginator, Scroller
 from .utils.selector import Selector
 
 time_rx = re.compile('[0-9]+')
-url_rx = re.compile('https?:\\/\\/(?:www\\.)?.+')
+url_rx = re.compile('https?://(?:www\\.)?.+')
 
 
 class Music(commands.Cog):
@@ -102,7 +102,7 @@ class Music(commands.Cog):
             await player.play()
 
     @commands.command(name='seek')
-    @checks.DJ_or(alone=True)
+    @checks.dj_or(alone=True)
     async def _seek(self, ctx, *, time: str):
         """ Seeks to a given position in a track. """
         player = self.bot.lavalink.players.get(ctx.guild.id)
@@ -149,8 +149,8 @@ class Music(commands.Cog):
                 await ctx.send(msg)
 
     @commands.command(name='skipto')
-    @checks.DJ_or(alone=True)
-    async def _skip_to(self, ctx, pos: int=1):
+    @checks.dj_or(alone=True)
+    async def _skip_to(self, ctx, pos: int = 1):
         """ Plays the queue from a specific point. Disregards tracks before the pos. """
         player = self.bot.lavalink.players.get(ctx.guild.id)
 
@@ -166,7 +166,7 @@ class Music(commands.Cog):
         await ctx.send(msg)
 
     @commands.command(name='stop')
-    @checks.DJ_or(alone=True)
+    @checks.dj_or(alone=True)
     async def _stop(self, ctx):
         """ Stops the player and clears its queue. """
         player = self.bot.lavalink.players.get(ctx.guild.id)
@@ -212,7 +212,7 @@ class Music(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name='queue')
-    async def _queue(self, ctx, user: discord.Member=None):
+    async def _queue(self, ctx, user: discord.Member = None):
         """ Shows the player's queue. """
         player = self.bot.lavalink.players.get(ctx.guild.id)
 
@@ -248,7 +248,7 @@ class Music(commands.Cog):
         await scroller.start_scrolling()
 
     @commands.command(name='pause')
-    @checks.DJ_or(alone=True)
+    @checks.dj_or(alone=True)
     async def _pause(self, ctx):
         """ Pauses/Resumes the current track. """
         player = self.bot.lavalink.players.get(ctx.guild.id)
@@ -285,7 +285,7 @@ class Music(commands.Cog):
         if not user_queue:
             return await ctx.send(ctx.localizer.format_str("{my_queue}"))
 
-        if not all(x in range(1,len(user_queue) + 1) for x in [from_pos, to_pos]):
+        if not all(x in range(1, len(user_queue) + 1) for x in [from_pos, to_pos]):
             return await ctx.send(ctx.localizer.format_str("{out_of_range}", _len=len(user_queue)))
 
         moved = player.move_user_track(ctx.author.id, from_pos - 1, to_pos - 1)
@@ -314,7 +314,6 @@ class Music(commands.Cog):
 
         await ctx.send(ctx.localizer.format_str("{remove}", _title=removed.title))
 
-
     @commands.command(name='sr')
     async def _sr(self, ctx):
         player = self.bot.lavalink.players.get(ctx.guild.id)
@@ -328,21 +327,23 @@ class Music(commands.Cog):
 
         identifiers = []
         for index, temp in enumerate(user_queue):
-                track, globpos = temp
-                identifiers.append(ctx.localizer.format_str("{queue.usertrack}", _index=index+1,
-                                                    _globalindex=globpos+1, _title=track.title,
-                                                    _uri=track.uri))
+            track, globpos = temp
+            identifiers.append(ctx.localizer.format_str("{queue.usertrack}", _index=index+1,
+                                                        _globalindex=globpos+1, _title=track.title,
+                                                        _uri=track.uri))
+
         functions = [player.remove_user_track]*len(user_queue)
         arguments = [(ctx.author.id, i) for i in range(len(user_queue))]
 
-        selector = Selector(ctx, identifiers, functions, arguments, num_selections=5)
+        selector = Selector(ctx, identifiers, functions, arguments, num_selections=5, color=ctx.me.color,
+                            title='Remove song plz')
         message, page, removed = await selector.start_scrolling()
-        await message.edit(ctx.localizer.format_str("{remove}", _title=removed.title))
-
+        await message.clear_reactions()
+        await message.edit(content=ctx.localizer.format_str("{remove}", _title=removed.title), embed=None)
 
     @commands.command(name="DJremove")
-    @checks.DJ_or()
-    async def _djremove(self, ctx, pos: int, user: discord.Member=None):
+    @checks.dj_or()
+    async def _djremove(self, ctx, pos: int, user: discord.Member = None):
         """ Remove a song from either the global queue or a users queue"""
         player = self.bot.lavalink.players.get(ctx.guild.id)
 
@@ -372,7 +373,7 @@ class Music(commands.Cog):
             await ctx.send(ctx.localizer.format_str("{dj_removed}", _title=removed.title, _user=requester.name))
 
     @commands.command(name='removeuser')
-    @checks.DJ_or(alone=True)
+    @checks.dj_or(alone=True)
     async def _user_queue_remove(self, ctx, user: discord.Member):
         """ Remove a song from either the global queue or a users queue"""
         player = self.bot.lavalink.players.get(ctx.guild.id)
@@ -468,7 +469,7 @@ class Music(commands.Cog):
         except asyncio.TimeoutError:
             await result_msg.clear_reactions()
             embed.title = ''
-            embed.description='{time_expired}'
+            embed.description = '{time_expired}'
             embed = ctx.localizer.format_embed(embed)
             await result_msg.edit(embed=embed)
             await asyncio.sleep(5)
@@ -486,7 +487,6 @@ class Music(commands.Cog):
                     await player.play()
 
     @commands.command(name='sk')
-    @checks.DJ_or(alone=True)
     async def _sk(self, ctx, *, query):    
         player = self.bot.lavalink.players.get(ctx.guild.id)
 
@@ -514,7 +514,8 @@ class Music(commands.Cog):
             if index == result_count:
                 break
 
-        search_selector = Selector(ctx, identifiers, functions, arguments, num_selections=5, color=ctx.me.color, title='Selector test')
+        search_selector = Selector(ctx, identifiers, functions, arguments, num_selections=5,
+                                   color=ctx.me.color, title='Selector test')
         message, current_page, result = await search_selector.start_scrolling()
         result = ctx.localizer.format_embed(result)
         await message.edit(embed=result)
@@ -523,7 +524,7 @@ class Music(commands.Cog):
             await player.play()
 
     @commands.command(name='disconnect')
-    @checks.DJ_or(alone=True)
+    @checks.dj_or(alone=True)
     async def _disconnect(self, ctx):
         """ Disconnects the player from the voice channel and clears its queue. """
         player = self.bot.lavalink.players.get(ctx.guild.id)
@@ -542,7 +543,7 @@ class Music(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name='volume')
-    @checks.DJ_or(alone=True, current=True)
+    @checks.dj_or(alone=True, current=True)
     async def _volume(self, ctx, volume: int = None):
         """ Changes the player's volume. Must be between 0 and 1000. Error Handling for that is done by Lavalink. """
         player = self.bot.lavalink.players.get(ctx.guild.id)
@@ -550,8 +551,8 @@ class Music(commands.Cog):
         if not volume:
             return await ctx.send(f'🔈 | {player.volume}%')
 
-        is_dj = checks.is_DJ(ctx)
-        is_admin = getattr(ctx.author.guild_permissions, 'administrator', None) == True
+        is_dj = checks.is_dj(ctx)
+        is_admin = getattr(ctx.author.guild_permissions, 'administrator', None) is True
         if int(player.current.requester) == ctx.author.id and not is_dj and not is_admin:
             if not 50 <= volume <= 125:
                 return await ctx.send(ctx.localizer.format_str("{volume.out_of_range}"))
@@ -563,7 +564,7 @@ class Music(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name='normalize')
-    @checks.DJ_or(alone=True)
+    @checks.dj_or(alone=True)
     async def _normalize(self, ctx):
         """ Reset the equalizer and  """
         player = self.bot.lavalink.players.get(ctx.guild.id)
@@ -578,8 +579,8 @@ class Music(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(name='boost')
-    @checks.DJ_or(alone=True)
-    async def _boost(self, ctx, boost: bool=None):
+    @checks.dj_or(alone=True)
+    async def _boost(self, ctx, boost: bool = None):
         """ Set the equalizer to bass boost the music """
         player = self.bot.lavalink.players.get(ctx.guild.id)
 
@@ -606,15 +607,18 @@ class Music(commands.Cog):
             embed = ctx.localizer.format_embed(embed)
             return await ctx.send(embed=embed)
         track = history[0]
-        description = ctx.localizer.format_str("{history.current}", _title=track.title, _uri=track.uri,_id=track.requester) + '\n\n'
+        description = ctx.localizer.format_str("{history.current}", _title=track.title,
+                                               _uri=track.uri, _id=track.requester) + '\n\n'
         description += ctx.localizer.format_str("{history.previous}", _len=len(history)-1) + '\n'
         thumb_url = await RoxUtils.ThumbNailer.identify(self,
-                                                track.identifier,
-                                                track.uri)
+                                                        track.identifier,
+                                                        track.uri)
         for index, track in enumerate(history[1:], start=1):
-            description += ctx.localizer.format_str("{history.track}",_index=-index, _title=track.title, _uri=track.uri, _id=track.requester) + '\n'
+            description += ctx.localizer.format_str("{history.track}", _index=-index, _title=track.title,
+                                                    _uri=track.uri, _id=track.requester) + '\n'
 
-        embed = discord.Embed(title=ctx.localizer.format_str('{history.title}'), color=ctx.me.color, description=description)
+        embed = discord.Embed(title=ctx.localizer.format_str('{history.title}'), color=ctx.me.color,
+                              description=description)
 
         if thumb_url:
             embed.set_thumbnail(url=thumb_url)
@@ -687,7 +691,7 @@ class Music(commands.Cog):
             await scroller.start_scrolling()
 
     @commands.command(name='scrub')
-    @checks.DJ_or(alone=True)
+    @checks.dj_or(alone=True)
     async def _scrub(self, ctx):
         """ Lists the first 10 search results from a given query. """
         player = self.bot.lavalink.players.get(ctx.guild.id)
@@ -767,8 +771,10 @@ class Music(commands.Cog):
         player = self.bot.lavalink.players.create(ctx.guild.id, endpoint=ctx.guild.region.value)
         # Create returns a player if one exists, otherwise creates.
 
-        should_connect = ctx.command.callback.__name__ in ('_play', '_find', '_search', '_sk')  # Add commands that require joining voice to work.
-        without_connect = ctx.command.callback.__name__ in ('_queue', '_history', '_now', '_lyrics') # Add commands that don't require the you being in voice.
+        # Add commands that require joining voice to work.
+        should_connect = ctx.command.callback.__name__ in ('_play', '_find', '_search', '_sk')
+        # Add commands that don't require the you being in voice.
+        without_connect = ctx.command.callback.__name__ in ('_queue', '_history', '_now', '_lyrics')
 
         if without_connect:
             return
@@ -813,8 +819,8 @@ class Music(commands.Cog):
         maxlength = self.max_track_length(ctx.guild, player)
         if maxlength and track['info']['length'] > maxlength:
             embed.description = ctx.localizer.format_str("{enqueue.toolong}",
-                                                     _length=timeformatter.format(track['info']['length']),
-                                                     _max=timeformatter.format(maxlength))
+                                                         length=timeformatter.format(track['info']['length']),
+                                                         max=timeformatter.format(maxlength))
             return
 
         track, pos_global, pos_local = player.add(requester=ctx.author.id, track=track)
@@ -849,7 +855,7 @@ class Music(commands.Cog):
         maxlength = self.bot.settings.get(guild, 'duration.max', None)
         if maxlength is None:
             return None
-        if len(player.listeners): # Avoid division by 0.
+        if len(player.listeners):  # Avoid division by 0.
             listeners = len(player.listeners)
         else:
             listeners = 1

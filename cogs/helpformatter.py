@@ -22,6 +22,7 @@ def get_cmd_dict(ctx, qualified_name):
             cmd_dict = None
     return cmd_dict
 
+
 async def helper(ctx):
     bot = ctx.bot
     # Display music commands first
@@ -107,13 +108,14 @@ def prefix_cleaner(ctx):
         ctx.prefix = pref
     return ctx
 
+
 class Help(commands.Cog):
     """Help command"""
     def __init__(self, bot):
         self.bot = bot
 
     @commands.command(hidden=True)
-    async def help(self, ctx): # Takes no args because reasons(using the view directly)
+    async def help(self, ctx):  # Takes no args because reasons(using the view directly)
         ctx.view.skip_ws()
         v = ctx.view
         invoker = v.buffer[v.index:v.end]

@@ -5,8 +5,10 @@ import inspect
 
 from .paginator import *
 
+
 class Selector(TextPaginator):
-    def __init__(self, ctx, identifiers, functions, arguments, terminate_on_select=True, num_selections=3, max_size=2000, **embed_base):
+    def __init__(self, ctx, identifiers, functions, arguments, terminate_on_select=True, num_selections=3,
+                 max_size=2000, **embed_base):
         self.ctx = ctx
         self.bot = ctx.bot
         self.cmdmsg = ctx.message
@@ -24,16 +26,17 @@ class Selector(TextPaginator):
 
         self.selections = list(zip(identifiers, functions, arguments))
 
-
+        self.max_selections = min(len(identifiers), num_selections)
         for i, selection in enumerate(self.selections):
             self.add_line(f"{i%num_selections+1}\N{combining enclosing keycap} {selection[0]}")
         self.close_page()
 
         if len(self.pages) > 1:
-            self.scrolling = True
+            self.multipage = True
         else:
-            self.scrolling = False
+            self.multipage = False
 
+        assert num_selections <= 10
         self.select_emojis = [f"{i+1}\N{combining enclosing keycap}" for i in range(num_selections)]
 
         self.control_emojis = [
@@ -45,10 +48,9 @@ class Selector(TextPaginator):
         self.timeout = 30
         self.args = None
         self.control_input = False
+        self.scrolling = True
 
         self.add_page_indicator(self.localizer, "{queue.pageindicator}")
-
-
 
     async def scroll(self, page):
         if page < 0 or page >= len(self.pages):
@@ -89,18 +91,22 @@ class Selector(TextPaginator):
                 return True
         return False
 
-
     async def send(self):
         self.current_page = 0
         # No embeds to scroll through
         if not self.pages:
             return
-        if not self.scrolling:
-            return await self.channel.send(embed=self.pages[0])
 
         self.message = await self.channel.send(embed=self.pages[0])
-        for reaction in itertools.chain(self.select_emojis, list(zip(*self.control_emojis))[0]):
+        
+        for reaction in self.select_emojis[:self.max_selections]:
             await self.message.add_reaction(reaction)
+
+        if self.multipage:
+            for reaction in list(zip(*self.control_emojis))[0]:
+                await self.message.add_reaction(reaction)
+        else:
+            await self.message.add_reaction('❌')
 
     async def start_scrolling(self):
         result = None
@@ -125,6 +131,7 @@ class Selector(TextPaginator):
                 await self.message.remove_reaction(reaction, user)
             except:
                 pass
+            print(self.match, self.args)
             if self.match:
                 if inspect.iscoroutinefunction(self.match):
                     if self.args:
@@ -136,6 +143,7 @@ class Selector(TextPaginator):
                         result = self.match(*self.args)
                     else:
                         result = self.match()
+            print(self.match, self.args)
 
             if self.terminate_on_select and not self.control_input:
                 await self.message.clear_reactions()

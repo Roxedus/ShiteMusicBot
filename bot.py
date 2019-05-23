@@ -45,7 +45,7 @@ def _get_prefix(bot, message):
 
 
 class Bot(commands.Bot):
-    def __init__(self, debug: bool=False):
+    def __init__(self, debug: bool = False):
         super().__init__(command_prefix=_get_prefix,
                          description=conf["bot"]["description"])
 
@@ -78,20 +78,21 @@ class Bot(commands.Bot):
 
             if isinstance(err, commands.CommandInvokeError):
                 self.logger.debug("Error running command: %s\n Traceback: %s"
-                                 % (ctx.command, traceback.format_exception(err.__traceback__)))
+                                  % (ctx.command, traceback.format_exception(err.__traceback__)))
                 pass
 
             elif isinstance(err, commands.NoPrivateMessage):
                 self.logger.debug("Error running command: %s\n Traceback: %s"
-                                 % (ctx.command, traceback.format_exception(err.__traceback__)))
+                                  % (ctx.command, traceback.format_exception(err.__traceback__)))
                 await ctx.send('That command is not available in DMs')
-            
+
             elif isinstance(err, commands.CommandOnCooldown):
-                await ctx.send(f"{ctx.message.author.mention} Command is on cooldown. Try again in `{err.retry_after:.1f}` seconds.")
+                await ctx.send(f"{ctx.message.author.mention} Command is on cooldown. "
+                               f"Try again in `{err.retry_after:.1f}` seconds.")
 
             elif isinstance(err, commands.CheckFailure):
                 self.logger.debug("Error running command: %s\n Traceback: %s"
-                                 % (ctx.command, traceback.format_exception(err.__traceback__)))
+                                  % (ctx.command, traceback.format_exception(err.__traceback__)))
                 pass
 
             elif isinstance(err, commands.CommandNotFound):
@@ -148,7 +149,7 @@ class Bot(commands.Bot):
             print(e)
 
 
-def run_bot(debug: bool=False):
+def run_bot(debug: bool = False):
     bot = Bot(debug=debug)
     bot.run()
 

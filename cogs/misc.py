@@ -16,13 +16,13 @@ class Misc(commands.Cog):
 
     @commands.command(name='ping', hidden=True)
     async def _ping(self, ctx):
-            start = time.perf_counter()
-            message = await ctx.send('Ping...')
-            end = time.perf_counter()
-            duration = int((end - start) * 1000)
-            edit = f'Pong!\nPing: {duration}ms' \
-                + f' | websocket: {int(self.bot.latency * 1000)}ms'
-            await message.edit(content=edit)
+        start = time.perf_counter()
+        message = await ctx.send('Ping...')
+        end = time.perf_counter()
+        duration = int((end - start) * 1000)
+        edit = f'Pong!\nPing: {duration}ms' \
+            + f' | websocket: {int(self.bot.latency * 1000)}ms'
+        await message.edit(content=edit)
 
     @commands.command(name='uptime', hidden=True)
     async def _uptime(self, ctx):
@@ -57,7 +57,6 @@ class Misc(commands.Cog):
         embed.add_field(name='{music.listeners}', value=f'{listeners}')
         embed = ctx.localizer.format_embed(embed)
         await ctx.send(embed=embed)
-    
 
     @commands.command(name="reloadlocale")
     @checks.is_owner()
@@ -93,8 +92,8 @@ class Misc(commands.Cog):
         hours, remainder = divmod(remainder, 60 * 60)
         minutes, seconds = divmod(remainder, 60)
         avatar = self.bot.user.avatar_url_as(format=None,
-                                                static_format='png',
-                                                size=1024)
+                                             static_format='png',
+                                             size=1024)
 
         uptimetext = f'{days}d {hours}t {minutes}m {seconds}s'
         embed = discord.Embed(color=ctx.me.color)
@@ -104,7 +103,7 @@ class Misc(commands.Cog):
         embed.add_field(name="{bot.what}",
                         value='{bot.infotext}', inline=False)
         embed.set_footer(icon_url="https://cdn.discordapp.com/icons/532176350019321917/92f43a1f67308a99a30c169db4b671dd.png?size=64",
-                            text="{bot.footer_text}")
+                         text="{bot.footer_text}")
         embed.add_field(name="{bot.how}",
                         value='{bot.spectext}')
         embed.add_field(name="{bot.how_many}",
@@ -113,12 +112,11 @@ class Misc(commands.Cog):
                         value=uptimetext)
 
         embed = ctx.localizer.format_embed(embed,
-            _python_v=platform.python_version(),
-            _discord_v=discord.__version__,
-            _lavalink_v=LavalinkVersion,
-            _guilds=guilds,
-            _members=members
-        )
+                                           _python_v=platform.python_version(),
+                                           _discord_v=discord.__version__,
+                                           _lavalink_v=LavalinkVersion,
+                                           _guilds=guilds,
+                                           _members=members)
         await ctx.send(embed=embed)
 
 

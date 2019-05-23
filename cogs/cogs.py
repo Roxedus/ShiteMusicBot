@@ -5,6 +5,7 @@ import traceback
 from discord.ext import commands
 from cogs.utils import checks
 
+
 class Cogs(commands.Cog):
     def __init__(self, bot):
         self.bot = bot

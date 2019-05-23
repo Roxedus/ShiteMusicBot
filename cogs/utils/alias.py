@@ -12,6 +12,7 @@ Allows per guild aliases of subcommands without doing anything to discord.py its
 ways of doing this appreciated.
 """
 
+
 class Aliaser:
     def __init__(self, localization_folder, default_lang):
         self.localization_folder = path.realpath(localization_folder)

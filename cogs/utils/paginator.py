@@ -110,7 +110,7 @@ class FieldPaginator(BasePaginator):
 
 
 class QueuePaginator(TextPaginator):
-    def __init__(self, localizer, queue, color, user_name: str=None):
+    def __init__(self, localizer, queue, color, user_name: str = None):
         self.localizer = localizer
         self.queue = queue
 

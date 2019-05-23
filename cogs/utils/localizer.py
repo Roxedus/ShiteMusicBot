@@ -16,6 +16,7 @@ Localizer for bot
 
 kmatch = re.compile('({(?!_)([^{}]+)})')
 
+
 class Localizer:
     def __init__(self, localization_folder, default_lang):
         self.localization_folder = path.realpath(localization_folder)
@@ -31,7 +32,6 @@ class Localizer:
         for folder in glob(path.join(self.localization_folder, "*/")):
             folder_base = path.basename(path.dirname(folder))
             self.localization_table[folder_base] = False
-        
 
     # loads all localizations
     def load_localizations(self):
@@ -41,7 +41,8 @@ class Localizer:
 
         self.all_localizations = flatten(self.localization_table)
         for lang, d in self.localization_table.items():
-            self.localization_table[lang] = Localizer._parse_localization_dictionary(self.localization_table[lang], self.all_localizations)
+            self.localization_table[lang] = Localizer._parse_localization_dictionary(self.localization_table[lang],
+                                                                                     self.all_localizations)
 
     # internal function for loading a localization
     def _load_localization(self, lang):
@@ -65,7 +66,6 @@ class Localizer:
                 with open(file, "r", encoding='utf-8') as f:
                     content = f.read()
                 l_table[file_base] = content
-
 
             l_table = flatten(l_table)
             # parsing a few times to resolve all values
