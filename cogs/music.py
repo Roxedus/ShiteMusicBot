@@ -4,10 +4,7 @@ Music commands
 import math
 import re
 import asyncio
-import yaml
-import codecs
 
-import lavalink
 import discord
 from discord.ext import commands
 from typing import Optional
@@ -17,8 +14,8 @@ import json
 from bs4 import BeautifulSoup
 
 from .utils import checks, RoxUtils, timeformatter
-from .utils.mixplayer import MixPlayer
 from .utils.paginator import QueuePaginator, TextPaginator, Scroller
+from cogs.lavalinker import Linker
 
 
 time_rx = re.compile('[0-9]+')
@@ -30,14 +27,7 @@ class Music(commands.Cog):
         self.bot = bot
         self.logger = self.bot.main_logger.bot_logger.getChild("Music")
         if not hasattr(bot, 'lavalink'):  # This ensures the client isn't overwritten during cog reloads.
-            bot.lavalink = lavalink.Client(bot.user.id, player=MixPlayer)
-
-            with codecs.open(f"{self.bot.datadir}/config.yaml", 'r', encoding='utf8') as f:
-                conf = yaml.load(f, Loader=yaml.SafeLoader)
-
-            bot.lavalink.add_node(**conf['lavalink nodes']['main'])
-            self.logger.debug("Adding Lavalink node")
-            bot.add_listener(bot.lavalink.voice_update_handler, 'on_socket_response')
+            bot.lavalink = Linker.linker(self, bot)
 
     async def cog_check(self, ctx):
         if not ctx.guild:

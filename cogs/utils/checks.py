@@ -88,3 +88,17 @@ def DJ_or(alone: bool = False, current: bool = False):
 
         return is_dj or is_alone or requester
     return commands.check(predicate)
+
+
+def is_sub_cmd():
+    async def predicate(ctx):
+        if ctx.invoked_subcommand is None:
+            return True
+        elif await ctx.bot.is_owner(ctx.author):
+            return await ctx.bot.is_owner(ctx.author)
+        elif await is_admin():
+            print(await is_admin())
+            return True
+        else:
+            return False
+    return commands.check(predicate)

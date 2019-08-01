@@ -2,12 +2,10 @@
 A cog to separate events from regular music commands
 """
 
-import codecs
-import yaml
 import lavalink
 from discord.ext import commands
 
-from .utils.mixplayer import MixPlayer
+from cogs.lavalinker import Linker
 import lavalink.events
 
 
@@ -16,15 +14,7 @@ class MusicEvents(commands.Cog):
         self.bot = bot
         # TODO: maybe only load when Music loads
         if not hasattr(bot, 'lavalink'):  # This ensures the client isn't overwritten during cog reloads.
-            bot.lavalink = lavalink.Client(bot.user.id, player=MixPlayer)
-
-            with codecs.open(f"{self.bot.datadir}/config.yaml", 'r', encoding='utf8') as f:
-                conf = yaml.load(f, Loader=yaml.SafeLoader)
-
-            bot.lavalink.add_node(**conf['lavalink nodes']['main'])
-            bot.add_listener(bot.lavalink.voice_update_handler, 'on_socket_response')
-
-        lavalink.add_event_hook(self.track_hook)
+            bot.lavalink = Linker.linker(self, bot)
 
     def cog_unload(self):
         self.bot.lavalink._event_hooks.clear()

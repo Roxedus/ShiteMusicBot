@@ -4,3 +4,4 @@ asyncio
 pyyaml
 BeautifulSoup4
 aiohttp<3.5.0,>=3.3.0
+hurry.filesize

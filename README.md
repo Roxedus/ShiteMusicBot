@@ -38,14 +38,12 @@ services:
                 aliases:
                   - lavalink
         volumes:
-          - /compose/BottStack/lavalink/application.yml:/opt/Lavalink/application.yml
+          - ./BotStack/lavalink/application.yml:/opt/Lavalink/application.yml
     bot:     
-        container_name: ProdMaster
+        container_name: Shite_Music_Bot
         image: rnorge/music
         networks:
           - internal
-        command: python3 bot.py
         volumes:
-          - /compose/BottStack/ProdBetaMaster/script:/diks
-          - /compose/BottStack/ProdBetaMaster/data:/app/data
+          - ./BotStack/ProdBetaMaster/data:/app/data
 ````
