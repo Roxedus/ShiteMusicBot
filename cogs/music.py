@@ -239,6 +239,32 @@ class Music(commands.Cog):
         scroller = Scroller(ctx, pagified_queue)
         await scroller.start_scrolling()
 
+    @commands.command(name='?')
+    async def _yeet(self, ctx):
+        """ Shows your queue. """
+        player = self.bot.lavalink.player_manager.get(ctx.guild.id)
+
+        async def get_time():
+            queue_duration = 0
+            for i, track in enumerate(player.queue):
+                queue_duration += int(track.duration)
+
+            until_play = queue_duration + player.current.duration - player.position
+            return str(timeformatter.format(until_play))
+
+        embed = discord.Embed(description=f'Queue length {await get_time()}, '
+                                          f'{len(player.queue)} songs in the queue', color=ctx.me.color)
+        msg = await ctx.send(embed=embed)
+
+        runs = 0
+
+        while runs != 5:
+            runs += 1
+            embed = discord.Embed(description=f'Length {await get_time()}, '
+                                              f'{len(player.queue)} songs in the queue', color=ctx.me.color)
+            await msg.edit(embed=embed)
+            await asyncio.sleep(3)
+
     @commands.command(name='myqueue')
     async def _myqueue(self, ctx):
         """ Shows your queue. """
