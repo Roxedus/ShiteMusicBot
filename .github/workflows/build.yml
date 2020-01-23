@@ -50,5 +50,5 @@ jobs:
       run: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
 
     - name: Pushes the Docker image
-      if: github.event.issue.pull_request == 'false'
+      if: github.event.issue.pull_request == 'true'
       run: docker push $repo
