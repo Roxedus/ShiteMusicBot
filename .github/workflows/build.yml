@@ -26,29 +26,44 @@ jobs:
       DOCKER_USERNAME: si0972
       DOCKER_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
     steps:
-    - uses: actions/checkout@v1        
-    - name: Build the Docker image
-      run: |
-        branch="${ref##*/}"
-        docker build -t $repo:$branch -t $repo:$branch-${{github.sha}} .
+    # - uses: actions/checkout@v1        
+    # - name: Build the Docker image
+    #   run: |
+    #     branch="${ref##*/}"
+    #     docker build -t $repo:$branch -t $repo:$branch-${{github.sha}} .
 
-    - name: Master tag
-      if: github.ref == 'refs/heads/master'
-      run: |
-        branch="${ref##*/}"
-        bot_ver=$(grep -i bot_version cogs/utils/bot_version.py | cut -d" " -f3 | tr -d \")
-        docker tag $repo:$branch $repo:$bot_ver
+    # - name: Master tag
+    #   if: github.ref == 'refs/heads/master'
+    #   run: |
+    #     branch="${ref##*/}"
+    #     bot_ver=$(grep -i bot_version cogs/utils/bot_version.py | cut -d" " -f3 | tr -d \")
+    #     docker tag $repo:$branch $repo:$bot_ver
 
-    - name: Bump version and push tag
-      if: github.ref == 'refs/heads/master'
-      uses: mathieudutour/github-tag-action@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+    # - name: Bump version and push tag
+    #   if: github.ref == 'refs/heads/master'
+    #   uses: mathieudutour/github-tag-action@v3
+    #   with:
+    #     github_token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Login to registry
-      if: github.event.pull_request == true
+    # - name: Login to registry
+    #   if: github.event.pull_request == false
+    #   run: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+
+    # - name: Pushes the Docker image
+    #   if: github.event.pull_request
+    #   run: docker push $repo
+
+    - name: Not run on pr
+      if: github.event.pull_request == false
       run: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
 
-    - name: Pushes the Docker image
-      if: github.event.pull_request == true
-      run: docker push $repo
+    - name: Not run on pr 2 
+      if: github.event.pull_request == 'false'
+      run: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+
+    - name: run on pr
+      if: github.event.pull_request
+      run: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+
+    - name: run
+      run: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
