@@ -307,7 +307,9 @@ class Music(commands.Cog):
         identifiers = []
         for index, temp in enumerate(user_queue):
             track, globpos = temp
-            identifiers.append(ctx.localizer.format_str("{queue.usertrack}", _index=index+1, _globalindex=globpos+1, _title=track.title, _uri=track.uri))
+            identifiers.append(ctx.localizer.format_str("{queue.usertrack}", _index=index+1,
+                                                        _globalindex=globpos+1, _title=track.title,
+                                                        _uri=track.uri))
 
         def ret_first_arg(*args):
             return args[0]
