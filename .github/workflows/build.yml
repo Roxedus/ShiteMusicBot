@@ -31,20 +31,24 @@ jobs:
       run: |
         branch="${ref##*/}"
         docker build -t $repo:$branch -t $repo:$branch-${{github.sha}} .
+
     - name: Login to registry
       if: github.event.issue.pull_request != 'false'
       run: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+
     - name: Master tag
       if: github.ref == 'refs/heads/master'
       run: |
         branch="${ref##*/}"
         bot_ver=$(grep -i bot_version cogs/utils/bot_version.py | cut -d" " -f3 | tr -d \")
         docker tag $repo:$branch $repo:$bot_ver
+
     - name: Bump version and push tag
       if: github.ref == 'refs/heads/master'
-    - uses: mathieudutour/github-tag-action@v3
+      uses: mathieudutour/github-tag-action@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
+
     - name: Pushes the Docker image
       if: github.event.issue.pull_request != 'false'
       run: docker push $repo
