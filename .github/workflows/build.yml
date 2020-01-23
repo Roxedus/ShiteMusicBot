@@ -46,7 +46,7 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Login to registry
-      if: github.event.issue.pull_request == 'false'
+      if: github.event.issue.pull_request != 'false'
       run: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
 
     - name: Pushes the Docker image
