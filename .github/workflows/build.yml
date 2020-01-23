@@ -13,9 +13,11 @@ jobs:
       with:
         python-version: 3.7
     - name: Install dependencies
+      env:
+        FLAKE_FILES: "bot.py cogs/*.py cogs/utils/*.py"
       run: |
         pip install flake8
-        flake8 --max-line-length 120
+        flake8  --max-line-length 120 --statistics ${FLAKE_FILES}
 
 
   # build-and-push:
