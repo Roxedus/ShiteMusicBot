@@ -1,0 +1,56 @@
+name: Test And Build BOT
+on: [push, pull_request]
+
+jobs:
+
+  flake8:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.7
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install flake8
+        flake8 --max-line-length 120
+
+
+  build-and-push:
+    needs: flake8
+    runs-on: ubuntu-latest
+    env:
+      repo : si0972/playground
+      ref: ${{github.ref}}
+      DOCKER_USERNAME: si0972
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
+    steps:
+    - uses: actions/checkout@v1        
+    - name: Build the Docker image
+      run: |
+        branch="${ref##*/}"
+        docker build -t $repo:$branch -t $repo:$branch-${{github.sha}} .       
+
+    - name: Login to registry
+      if: github.event.issue.pull_request != 'false'
+      run: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+
+    - name: Master tag
+      if: github.ref == 'refs/heads/master'
+      run: |
+        branch="${ref##*/}"
+        bot_ver=$(grep -i bot_version cogs/utils/bot_version.py | cut -d" " -f3 | tr -d \")
+        docker tag $repo:$branch $repo:$bot_ver
+
+    - name: Bump version and push tag
+      if: github.ref == 'refs/heads/master'
+      uses: mathieudutour/github-tag-action@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Pushes the Docker image
+      if: github.event.issue.pull_request != 'false'
+      run: docker push $repo
