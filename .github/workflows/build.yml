@@ -78,7 +78,7 @@ jobs:
           add: cogs/utils/bot_version.py
           author_name: MarlinBotCode
           message: Bump Version
-          tag: ${{ steps.tagger.outputs.tag }}
+          tag: v${{ steps.tagger.outputs.tag }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -95,7 +95,7 @@ jobs:
           REPO: ${{ steps.vars.outputs.repo }}
           BRANCH: ${{ steps.vars.outputs.branch }}
         run: |
-          docker tag $REPO:$BRANCH $REPO:${{ steps.vars.outputs.tag }}
+          docker tag $REPO:$BRANCH $REPO:${{ steps.tagger.outputs.tag }}
 
       - name: Login to registry
         if: github.event_name != 'pull_request'
