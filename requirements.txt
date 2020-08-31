@@ -1,6 +1,5 @@
-discord.py >= 1.2.5
+discord.py
 git+https://github.com/Devoxin/Lavalink.py@dev
 asyncio
 pyyaml
 BeautifulSoup4
-aiohttp<3.5.0,>=3.3.0
